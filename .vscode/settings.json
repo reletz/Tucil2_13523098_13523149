@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "*.ejs": "html",
+    "*.css": "tailwindcss",
+    "vector": "cpp",
+    "cmath": "cpp"
+  }
+}
