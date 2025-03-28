@@ -14,6 +14,7 @@ namespace ImageUtils{
     void printMatrix(const vector<vector<RGB>>& image);
     vector<vector<RGB>> resize(const vector<vector<RGB>>& image, int newWidth, int newHeight);
     vector<vector<RGB>> normalize(const vector<vector<RGB>>& image, RGB mean);
+    void fillCompressedImage(QuadTreeNode* node, vector<vector<RGB>>& compressedImage);
 }
 
 #endif 

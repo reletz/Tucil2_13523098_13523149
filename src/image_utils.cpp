@@ -1,7 +1,5 @@
-#include <iostream>
-#include <vector>
-#include <cmath>
-#include <opencv2/opencv.hpp>
+#include <mutex>
+#include "opencv2/opencv.hpp"
 #include "header/image_utils.hpp"
 using namespace std;
 
@@ -89,4 +87,25 @@ vector<vector<RGB>> ImageUtils::normalize(const vector<vector<RGB>>& image, RGB 
     }
 
     return newImage;
+}
+
+void ImageUtils::fillCompressedImage(QuadTreeNode* node, vector<vector<RGB>>& image){
+    if (node->isLeafNode()) {
+        int x = node->getX();
+        int y = node->getY();
+        int width = node->getWidth();
+        int height = node->getHeight();
+        RGB mean = node->getMean();
+        
+        for (int i = y; i < y + height; ++i) {
+            for (int j = x; j < x + width; ++j) {
+                image[i][j] = mean;
+            }
+        }
+    } else {
+        for (int k = 0; k < 4; ++k) {
+            fillCompressedImage(node->getChildNode(k), image);
+        }
+    }
+    
 }
