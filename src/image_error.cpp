@@ -42,18 +42,20 @@ float ImageError::variance(const vector<vector<RGB>>& image, int x, int y, int w
 
 float ImageError::mad(const vector<vector<RGB>>& image, int x, int y, int width, int height){
   long long R = 0, G = 0, B = 0;
-  float dim = float(width*height);
+  float dim = float(width * height);
+  if (dim == 0) return 0.0f;
+
   RGB imgMean = mean(image, x, y, width, height);
 
   for (int j = y; j < y + height; j++){
     for (int i = x; i < x + width; i++){
-      R = abs(image[j][i].r - imgMean.r);
-      G = abs(image[j][i].g - imgMean.g);
-      B = abs(image[j][i].b - imgMean.b);
+      R += abs(image[j][i].r - imgMean.r);
+      G += abs(image[j][i].g - imgMean.g);
+      B += abs(image[j][i].b - imgMean.b);
     }
   }
 
-  return (R + G + B) / (3.0f*dim);
+  return (R + G + B) / (3.0f * dim);
 }
 
 float ImageError::maxDiff(const vector<vector<RGB>>& image, int x, int y, int width, int height) {

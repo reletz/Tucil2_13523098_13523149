@@ -13,12 +13,12 @@ int main(int argc, char const *argv[])
 {
     IO stream;
 
-    stream.initInput(argc, argv);
+    if (!stream.initInput(argc, argv)) return 0;
 
     auto start = chrono::steady_clock::now();
 
     QuadTree qt = compressImage(stream);
-    
+
     auto end = chrono::steady_clock::now();
     auto diff = end - start;
 

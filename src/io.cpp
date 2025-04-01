@@ -72,7 +72,7 @@ bool IO::inputMethod(){
   cout << "4. Entropy" << '\n';
   cout << "Choose method: ";
 
-  while (!(cin >> method) || (method <= 0 && method >= 5)) {
+  while (!(cin >> method) || (method <= 0 && method >= 4)) {
     cout << "Invalid input! Please enter a valid number.\n";
     cout << "Choose method: ";
     
@@ -113,10 +113,12 @@ bool IO::inputDest(char const *argv[]) {
   return true;
 }
 
-void IO::initInput(int argc, char const *argv[]){
-  if (!inputSrc(argv))    return;
-  if (!inputThreshold())  return;
-  if (!inputMinBlock())   return;
-  if (!inputMethod())     return;
-  if (!inputDest(argv))   return;
+bool IO::initInput(int argc, char const *argv[]){
+  if (!inputSrc(argv))    return false;
+  if (!inputThreshold())  return false;
+  if (!inputMinBlock())   return false;
+  if (!inputMethod())     return false;
+  if (!inputDest(argv))   return false;
+
+  return true;
 }

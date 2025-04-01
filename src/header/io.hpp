@@ -25,7 +25,7 @@ class IO{
 
     bool validYN(string msg);
   
-    void initInput(int argc, char const *argv[]);    
+    bool initInput(int argc, char const *argv[]);    
 };
 
 #endif

@@ -63,9 +63,9 @@ QuadTreeNode* QuadTree::buildRecursive(const vector<vector<RGB>>& image, int x, 
 float QuadTree::calculateError(const std::vector<std::vector<RGB>>& image, int x, int y, int width, int height, int method) {
   switch(method){
     case 0: return ImageError::variance(image, x, y, width, height);
-    case 1: return ImageError::mad(     image, x, y, width, height);
-    case 2: return ImageError::maxDiff( image, x, y, width, height);
-    case 3: return ImageError::entropy( image, x, y, width, height);
+    case 1: return ImageError::mad(image, x, y, width, height);
+    case 2: return ImageError::maxDiff(image, x, y, width, height);
+    case 3: return ImageError::entropy(image, x, y, width, height);
     default: 
       cerr << "[ERROR] Unknown error method: " << method << '\n';
       return 0.0f;
