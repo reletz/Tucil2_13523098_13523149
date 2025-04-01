@@ -3,12 +3,13 @@
 #include "header/quadtree.hpp"
 #include <filesystem>
 using namespace std;
+using namespace ImageUtils;
 
 int main(int argc, char const *argv[])
 {
     long long VAR_THRESHOLD = 0;
     long long MIN_BLOCK_SIZE = 0;
-    std::filesystem::path rootWorkspace = std::filesystem::canonical(std::filesystem::path(argv[0]).parent_path() / "..");
+    filesystem::path rootWorkspace = filesystem::canonical(filesystem::path(argv[0]).parent_path() / "..");
     rootWorkspace += "/test/";
     
     cout << "Input Image Name in test folder: ";
@@ -28,11 +29,11 @@ int main(int argc, char const *argv[])
     cin >> method;
 
 
-    vector<vector<RGB>> image = ImageUtils::imageToMatrix((rootWorkspace / imageName).string());
+    vector<vector<RGB>> image = imageToMatrix((rootWorkspace / imageName).string());
     QuadTree qt;
     qt.buildTree(image, 0, 0, image[0].size(), image.size(), method-1, VAR_THRESHOLD, MIN_BLOCK_SIZE);
     vector<vector<RGB>> compressedImage(image.size(), vector<RGB>(image[0].size()));
-    ImageUtils::fillCompressedImage(qt.getRoot(), compressedImage);
-    ImageUtils::matrixToImage(compressedImage, (rootWorkspace / ("compressed_" + imageName)).string());
+    fillCompressedImage(qt.getRoot(), compressedImage);
+    matrixToImage(compressedImage, (rootWorkspace / ("compressed_" + imageName)).string());
     return 0;
 }

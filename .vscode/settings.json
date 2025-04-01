@@ -3,6 +3,9 @@
     "*.ejs": "html",
     "*.css": "tailwindcss",
     "vector": "cpp",
-    "cmath": "cpp"
+    "cmath": "cpp",
+    "iostream": "cpp",
+    "atomic": "cpp",
+    "memory": "cpp"
   }
 }

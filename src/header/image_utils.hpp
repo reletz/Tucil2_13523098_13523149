@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <FreeImagePlus.h>
 #include "quadtree.hpp"
 
 using namespace std;

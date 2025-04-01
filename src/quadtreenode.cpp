@@ -3,13 +3,25 @@
 /*
 PART 1: QuadTreeNode
 */
-QuadTreeNode::QuadTreeNode(): width(-1), height(-1), x(-1), y(-1){}
+QuadTreeNode::QuadTreeNode(): width(-1), height(-1), x(-1), y(-1){
+  for (int i = 0; i < 4; i++) {
+    childNode[i] = nullptr;
+  }
+}
 
-QuadTreeNode::QuadTreeNode(int x, int y, int width, int height): width(width), height(height), x(x), y(y){}
+QuadTreeNode::QuadTreeNode(int x, int y, int width, int height): width(width), height(height), x(x), y(y){
+  for (int i = 0; i < 4; i++) {
+    childNode[i] = nullptr;
+  }
+}
 
-QuadTreeNode::~QuadTreeNode(){
-  for (int i = 0; i < 4; i++) delete childNode[i];
-  delete[] childNode;
+QuadTreeNode::~QuadTreeNode() {
+  for (int i = 0; i < 4; i++) {
+      if (childNode[i] != nullptr) {
+          delete childNode[i];
+          childNode[i] = nullptr;
+      }
+  }
 }
 
 int QuadTreeNode::getX() const {

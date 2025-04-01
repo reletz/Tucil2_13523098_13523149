@@ -1,4 +1,4 @@
-#include "image_error.hpp"
+#include "header/image_error.hpp"
 
 RGB ImageError::mean(const std::vector<std::vector<RGB>>& image, int x, int y, int width, int height){
   long long R = 0, G = 0, B = 0;
@@ -85,5 +85,5 @@ float ImageError::maxDiff(const vector<vector<RGB>>& image, int x, int y, int wi
 
 
 float ImageError::entropy(const vector<vector<RGB>>& image, int x, int y, int width, int height){
-  
+  return 0.0;
 }
