@@ -109,3 +109,14 @@ void ImageUtils::fillCompressedImage(QuadTreeNode* node, vector<vector<RGB>>& im
         }
     }
 }
+
+QuadTree ImageUtils::compressImage(IO streams){
+    vector<vector<RGB>> image = imageToMatrix(streams.imageSrcPath.string());
+    QuadTree qt;
+    qt.buildTree(image, 0, 0, image[0].size(), image.size(), streams.method-1, streams.VAR_THRESHOLD, streams.MIN_BLOCK_SIZE);
+    vector<vector<RGB>> compressedImage(image.size(), vector<RGB>(image[0].size()));
+    fillCompressedImage(qt.getRoot(), compressedImage);
+    matrixToImage(compressedImage, streams.imageDestPath.string());
+
+    return qt;
+}

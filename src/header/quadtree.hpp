@@ -55,6 +55,12 @@ class QuadTree{
     int getThreshold() const;
     int getMinSize() const;
 
+    int getMaxDepth() const;
+    int getMaxDepth(QuadTreeNode* node) const;
+
+    int getNodeCount() const;
+    int getNodeCount(QuadTreeNode* node) const;
+
     float calculateError(const vector<vector<RGB>>& image, int x, int y, int width, int height, int method);
 
     void buildTree(const vector<vector<RGB>>& image, int x, int y, int width, int height, int method, int threshold, int minSize);

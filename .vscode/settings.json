@@ -6,6 +6,10 @@
     "cmath": "cpp",
     "iostream": "cpp",
     "atomic": "cpp",
-    "memory": "cpp"
+    "memory": "cpp",
+    "ostream": "cpp",
+    "chrono": "cpp",
+    "filesystem": "cpp",
+    "xstring": "cpp"
   }
 }

@@ -6,6 +6,7 @@
 #include <cmath>
 #include <FreeImagePlus.h>
 #include "quadtree.hpp"
+#include "io.hpp"
 
 using namespace std;
 
@@ -16,6 +17,8 @@ namespace ImageUtils{
     vector<vector<RGB>> resize(const vector<vector<RGB>>& image, int newWidth, int newHeight);
     vector<vector<RGB>> normalize(const vector<vector<RGB>>& image, RGB mean);
     void fillCompressedImage(QuadTreeNode* node, vector<vector<RGB>>& compressedImage);
+
+    QuadTree compressImage(IO streams);
 }
 
 #endif 

@@ -7,7 +7,13 @@ PART 2: QuadTree
 
 // ctor-dtor
 QuadTree::QuadTree(): method(-1), threshold(-1), minSize(-1), root(nullptr) {}
-QuadTree::~QuadTree(){ delete root; }
+QuadTree::~QuadTree() {
+  if (root != nullptr) {
+    delete root;
+    root = nullptr;
+  }
+}
+
 
 // getter
 QuadTreeNode* QuadTree::getRoot() const { return root; }
@@ -64,4 +70,37 @@ float QuadTree::calculateError(const std::vector<std::vector<RGB>>& image, int x
       cerr << "[ERROR] Unknown error method: " << method << '\n';
       return 0.0f;
   }
+}
+
+int QuadTree::getMaxDepth(QuadTreeNode* node) const {
+  if (node == nullptr) return 0;
+  
+  if (node->isLeafNode()) return 1;
+
+  int maxChildDepth = 0;
+  for (int i = 0; i < 4; i++) {
+      maxChildDepth = max(maxChildDepth, getMaxDepth(node->getChildNode(i)));
+  }
+
+  return 1 + maxChildDepth;
+}
+
+int QuadTree::getMaxDepth() const {
+  return getMaxDepth(root);
+}
+
+int QuadTree::getNodeCount(QuadTreeNode* node) const {
+  if (node == nullptr) return 0;
+
+  int count = 1; // Hitung diri sendiri
+
+  for (int i = 0; i < 4; i++) {
+      count += getNodeCount(node->getChildNode(i));
+  }
+
+  return count;
+}
+
+int QuadTree::getNodeCount() const {
+  return getNodeCount(root);
 }
