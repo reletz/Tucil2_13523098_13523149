@@ -1,71 +1,84 @@
 #include <mutex>
 #include "header/image_utils.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 using namespace std;
 
-vector<vector<RGB>> ImageUtils::imageToMatrix(const string& filename){
-    fipImage img;
-    img.load(filename.c_str());
-    if (!img.isValid()) {
+vector<vector<RGB>> ImageUtils::imageToMatrix(const string& filename) {
+    int width, height, channels;
+    unsigned char* img = stbi_load(filename.c_str(), &width, &height, &channels, 3); // Force 3 channels (RGB)
+    
+    if (!img) {
         cout << "Could not read the image: " << filename << endl;
         exit(1);
-    }    
-
-    int x = img.getWidth();
-    int y = img.getHeight();
-    vector<vector<RGB>> image(y, vector<RGB>(x));
-
-    for (int i = 0; i < y; i++){
-        for (int j = 0 ; j < x; j++){
-            RGBQUAD color;
-            if (img.getPixelColor(j, i, &color)) {  // Perbaikan indeks
-                image[i][j].r = color.rgbRed;
-                image[i][j].g = color.rgbGreen;
-                image[i][j].b = color.rgbBlue;
-            }
+    }
+    
+    vector<vector<RGB>> image(height, vector<RGB>(width));
+    
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            int idx = (i * width + j) * 3; // Calculate position in the array
+            image[i][j].r = img[idx];      // Red
+            image[i][j].g = img[idx + 1];  // Green
+            image[i][j].b = img[idx + 2];  // Blue
         }
     }
-
+    
+    stbi_image_free(img);
     return image;
 }
 
 void ImageUtils::matrixToImage(const vector<vector<RGB>>& image, const string& filename) {
-    if (image.empty() || image[0].empty()) {  // Cek agar tidak segmentation fault
+    if (image.empty() || image[0].empty()) {
         cout << "Error: Image matrix is empty!" << endl;
         return;
     }
 
     int height = image.size();
     int width = image[0].size();
-
-    fipImage img(FIT_BITMAP, width, height, 24);
-    if (!img.isValid()) {
-        cout << "Failed to create image!" << endl;
-        return;
-    }
-
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            RGBQUAD color;
-            color.rgbRed = image[y][x].r;
-            color.rgbGreen = image[y][x].g;
-            color.rgbBlue = image[y][x].b;
-            img.setPixelColor(x, y, &color);
+    
+    unsigned char* img_data = new unsigned char[width * height * 3];
+    
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            int idx = (i * width + j) * 3;
+            img_data[idx] = image[i][j].r;     // Red
+            img_data[idx + 1] = image[i][j].g; // Green
+            img_data[idx + 2] = image[i][j].b; // Blue
         }
     }
-
-    if (!img.save(filename.c_str())) {
+    
+    int success = 0;
+    
+    string ext = filename.substr(filename.find_last_of(".") + 1);
+    if (ext == "png") {
+        success = stbi_write_png(filename.c_str(), width, height, 3, img_data, width * 3);
+    } else if (ext == "jpg" || ext == "jpeg") {
+        success = stbi_write_jpg(filename.c_str(), width, height, 3, img_data, 50);
+    } else if (ext == "bmp") {
+        success = stbi_write_bmp(filename.c_str(), width, height, 3, img_data);
+    } else {
+        success = stbi_write_png(filename.c_str(), width, height, 3, img_data, width * 3);
+    }
+    
+    delete[] img_data;
+    
+    if (!success) {
         cout << "Failed to save image: " << filename << endl;
     }
 }
 
-vector<vector<RGB>> ImageUtils::resize(const vector<vector<RGB>>& image, int newWidth, int newHeight){
+vector<vector<RGB>> ImageUtils::resize(const vector<vector<RGB>>& image, int newWidth, int newHeight) {
     int rows = image.size();
     int cols = image[0].size();
     vector<vector<RGB>> newImage(newHeight, vector<RGB>(newWidth));
 
-    for(int i = 0; i < newHeight;i++){
-        for(int j = 0 ; j < newWidth;j++){
-            int y = i * rows / newHeight;  // Perbaikan indeks
+    for (int i = 0; i < newHeight; i++) {
+        for (int j = 0; j < newWidth; j++) {
+            int y = i * rows / newHeight;
             int x = j * cols / newWidth;  
             newImage[i][j] = image[y][x];
         }
@@ -74,23 +87,23 @@ vector<vector<RGB>> ImageUtils::resize(const vector<vector<RGB>>& image, int new
     return newImage;
 }
 
-vector<vector<RGB>> ImageUtils::normalize(const vector<vector<RGB>>& image, RGB mean){
+vector<vector<RGB>> ImageUtils::normalize(const vector<vector<RGB>>& image, RGB mean) {
     int rows = image.size();
     int cols = image[0].size();
     vector<vector<RGB>> newImage(rows, vector<RGB>(cols));
 
-    for(int i = 0; i < rows;i++){
-        for(int j = 0 ; j < cols;j++){
-            newImage[i][j].r = max(0, image[i][j].r - mean.r);
-            newImage[i][j].g = max(0, image[i][j].g - mean.g);
-            newImage[i][j].b = max(0, image[i][j].b - mean.b);
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            newImage[i][j].r = max(0, (int)image[i][j].r - (int)mean.r);
+            newImage[i][j].g = max(0, (int)image[i][j].g - (int)mean.g);
+            newImage[i][j].b = max(0, (int)image[i][j].b - (int)mean.b);
         }
     }
 
     return newImage;
 }
 
-void ImageUtils::fillCompressedImage(QuadTreeNode* node, vector<vector<RGB>>& image){
+void ImageUtils::fillCompressedImage(QuadTreeNode* node, vector<vector<RGB>>& image) {
     if (node->isLeafNode()) {
         int x = node->getX();
         int y = node->getY();
@@ -110,7 +123,7 @@ void ImageUtils::fillCompressedImage(QuadTreeNode* node, vector<vector<RGB>>& im
     }
 }
 
-QuadTree ImageUtils::compressImage(IO streams){
+QuadTree ImageUtils::compressImage(IO streams) {
     vector<vector<RGB>> image = imageToMatrix(streams.imageSrcPath.string());
     QuadTree qt;
     qt.buildTree(image, 0, 0, image[0].size(), image.size(), streams.method-1, streams.VAR_THRESHOLD, streams.MIN_BLOCK_SIZE);
