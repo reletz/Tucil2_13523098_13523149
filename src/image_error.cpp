@@ -1,4 +1,9 @@
 #include "header/image_error.hpp"
+#include <cmath>
+#include <vector>
+#include <map>
+
+using namespace std;
 
 RGB ImageError::mean(const std::vector<std::vector<RGB>>& image, int x, int y, int width, int height){
   long long R = 0, G = 0, B = 0;
@@ -85,7 +90,111 @@ float ImageError::maxDiff(const vector<vector<RGB>>& image, int x, int y, int wi
   return (dR + dG + dB) / 3.0f;
 }
 
+float ImageError::entropy(const vector<vector<RGB>>& image, int x, int y, int width, int height) {
+  // histogram R, G, B
+  map<int, int> histR, histG, histB;
+  int totalPixels = width * height;
 
-float ImageError::entropy(const vector<vector<RGB>>& image, int x, int y, int width, int height){
-  return 0.0;
+  // itung "tinggi" histogram
+  for (int j = y; j < y + height; j++) {
+    for (int i = x; i < x + width; i++) {
+      int r = image[j][i].r;
+      int g = image[j][i].g;
+      int b = image[j][i].b;
+
+      histR[r]++;
+      histG[g]++;
+      histB[b]++;
+    }
+  }
+
+  // Entropi histogram
+  auto calculateEntropy = [](const map<int, int>& hist, int totalPixels) -> float {
+    float entropy = 0.0f;
+    for (const auto& entry : hist) {
+      float probability = float(entry.second) / totalPixels;
+      if (probability > 0) {
+        entropy -= probability * log2(probability);
+      }
+    } return entropy;
+  };  
+
+  float entropyR = calculateEntropy(histR, totalPixels);
+  float entropyG = calculateEntropy(histG, totalPixels);
+  float entropyB = calculateEntropy(histB, totalPixels);
+
+  return (entropyR + entropyG + entropyB) / 3.0f;
+}
+
+float ImageError::ssim_channel(const vector<vector<int>>& A,
+  const vector<vector<int>>& B,
+  int xA, int yA, int xB, int yB,
+  int width, int height) {
+  const float C1 = (0.01f * 255) * (0.01f * 255);
+  const float C2 = (0.03f * 255) * (0.03f * 255);
+  int N = width * height;
+
+  float meanA = 0.0f, meanB = 0.0f;
+  for (int j = 0; j < height; ++j) {
+    for (int i = 0; i < width; ++i) {
+      meanA += A[yA + j][xA + i];
+      meanB += B[yB + j][xB + i];
+    }
+  }
+
+  meanA /= N;
+  meanB /= N;
+
+  float varA = 0.0f, varB = 0.0f, covAB = 0.0f;
+  for (int j = 0; j < height; ++j) {
+    for (int i = 0; i < width; ++i) {
+      float a = A[yA + j][xA + i] - meanA;
+      float b = B[yB + j][xB + i] - meanB;
+      varA += a * a;
+      varB += b * b;
+      covAB += a * b;
+    }
+  }
+  varA /= N - 1;
+  varB /= N - 1;
+  covAB /= N - 1;
+
+  float numerator = (2 * meanA * meanB + C1) * (2 * covAB + C2);
+  float denominator = (meanA * meanA + meanB * meanB + C1) * (varA + varB + C2);
+
+  return numerator / denominator;
+}
+
+float ImageError::ssim(const vector<vector<RGB>>& imageA,
+  const vector<vector<RGB>>& imageB,
+  int xA, int yA,
+  int xB, int yB,
+  int width, int height) {
+
+  int H = imageA.size(), W = imageA[0].size();
+
+  // Convert RGB to 3 channel matrix
+  vector<vector<int>> channelAR(H, vector<int>(W));
+  vector<vector<int>> channelAG(H, vector<int>(W));
+  vector<vector<int>> channelAB(H, vector<int>(W));
+  vector<vector<int>> channelBR(H, vector<int>(W));
+  vector<vector<int>> channelBG(H, vector<int>(W));
+  vector<vector<int>> channelBB(H, vector<int>(W));
+
+  for (int j = 0; j < H; ++j) {
+    for (int i = 0; i < W; ++i) {
+      channelAR[j][i] = imageA[j][i].r;
+      channelAG[j][i] = imageA[j][i].g;
+      channelAB[j][i] = imageA[j][i].b;
+      channelBR[j][i] = imageB[j][i].r;
+      channelBG[j][i] = imageB[j][i].g;
+      channelBB[j][i] = imageB[j][i].b;
+    }
+  }
+
+  float ssimR = ssim_channel(channelAR, channelBR, xA, yA, xB, yB, width, height);
+  float ssimG = ssim_channel(channelAG, channelBG, xA, yA, xB, yB, width, height);
+  float ssimB = ssim_channel(channelAB, channelBB, xA, yA, xB, yB, width, height);
+
+  return (ssimR + ssimG + ssimB) / 3.0f;
 }

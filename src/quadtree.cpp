@@ -24,48 +24,58 @@ int QuadTree::getMinSize() const { return minSize; }
 void QuadTree::buildTree(const vector<vector<RGB>>& image, 
   int x, int y, 
   int width, int height, 
-  int method, int threshold, int minSize
+  int method, double threshold, int minSize
 ) {
   this->method = method;
   this->threshold = threshold;
   this->minSize = minSize;
 
-  this->root = buildRecursive(image, x, y, width, height);
+  this->imageOriginal = image;
+  this->imageReconstructed = vector<vector<RGB>>(image.size(), vector<RGB>(image[0].size()));
+  this->root = buildRecursive(x, y, width, height);
 }
 
-QuadTreeNode* QuadTree::buildRecursive(const vector<vector<RGB>>& image, int x, int y, int width, int height){
+QuadTreeNode* QuadTree::buildRecursive(int x, int y, int width, int height) {
   QuadTreeNode* node = new QuadTreeNode(x, y, width, height);
 
-  float error = calculateError(image, x, y, width, height, method);
+  float error = calculateError(imageOriginal, imageReconstructed, x, y, width, height, method);
 
-  // Kalau udah cukup (udah jadi leaf)
   if (error < threshold || width <= minSize || height <= minSize) {
-    RGB mean = ImageError::mean(image, x, y, width, height);
-    node -> setMean(mean);
-    node -> setLeaf(true);
+    RGB mean = ImageError::mean(imageOriginal, x, y, width, height);
+    node->setMean(mean);
+    node->setLeaf(true);
+
+    for (int j = y; j < y + height; ++j) {
+      for (int i = x; i < x + width; ++i) {
+        imageReconstructed[j][i] = mean;
+      }
+    }
+
     return node;
   }
 
-  node -> setLeaf(false);
+  node->setLeaf(false);
   int halfW = width / 2;
   int halfH = height / 2;
 
-  // bikin anak
-  node->setChild(0, buildRecursive(image, x, y, halfW, halfH));
-  node->setChild(1, buildRecursive(image, x + halfW, y, width - halfW, halfH));
-  node->setChild(2, buildRecursive(image, x, y + halfH, halfW, height - halfH));
-  node->setChild(3, buildRecursive(image, x + halfW, y + halfH, width - halfW, height - halfH));
+  node->setChild(0, buildRecursive(x, y, halfW, halfH));
+  node->setChild(1, buildRecursive(x + halfW, y, width - halfW, halfH));
+  node->setChild(2, buildRecursive(x, y + halfH, halfW, height - halfH));
+  node->setChild(3, buildRecursive(x + halfW, y + halfH, width - halfW, height - halfH));
 
   return node;
 }
 
 // formulation
-float QuadTree::calculateError(const std::vector<std::vector<RGB>>& image, int x, int y, int width, int height, int method) {
+float QuadTree::calculateError(const vector<vector<RGB>>& imageA, 
+  const vector<vector<RGB>>& imageB, 
+  int x, int y, int width, int height, int method) {
   switch(method){
-    case 0: return ImageError::variance(image, x, y, width, height);
-    case 1: return ImageError::mad(image, x, y, width, height);
-    case 2: return ImageError::maxDiff(image, x, y, width, height);
-    case 3: return ImageError::entropy(image, x, y, width, height);
+    case 0: return ImageError::variance(imageA, x, y, width, height);
+    case 1: return ImageError::mad(imageA, x, y, width, height);
+    case 2: return ImageError::maxDiff(imageA, x, y, width, height);
+    case 3: return ImageError::entropy(imageA, x, y, width, height);
+    case 4: return 1.0f -  ImageError::ssim(imageA, imageB, x, x, y, y, width, height);
     default: 
       cerr << "[ERROR] Unknown error method: " << method << '\n';
       return 0.0f;

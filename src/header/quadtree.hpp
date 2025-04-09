@@ -43,8 +43,10 @@ class QuadTree{
   private:
     QuadTreeNode* root; // root
     int method;         // [0..4]
-    int threshold;
+    double threshold;
     int minSize;
+    vector<vector<RGB>> imageOriginal;
+    vector<vector<RGB>> imageReconstructed;
   
   public:
     QuadTree();
@@ -61,10 +63,10 @@ class QuadTree{
     int getNodeCount() const;
     int getNodeCount(QuadTreeNode* node) const;
 
-    float calculateError(const vector<vector<RGB>>& image, int x, int y, int width, int height, int method);
+    float calculateError(const vector<vector<RGB>>& imageA, const vector<vector<RGB>>& imageB, int x, int y, int width, int height, int method);
 
-    void buildTree(const vector<vector<RGB>>& image, int x, int y, int width, int height, int method, int threshold, int minSize);
-    QuadTreeNode* buildRecursive(const vector<vector<RGB>>& image, int x, int y, int width, int height);
+    void buildTree(const vector<vector<RGB>>& image, int x, int y, int width, int height, int method, double threshold, int minSize);
+    QuadTreeNode* buildRecursive(int x, int y, int width, int height);
 };
 
 #endif

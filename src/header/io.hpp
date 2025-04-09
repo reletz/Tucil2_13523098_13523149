@@ -12,7 +12,7 @@ namespace fs = std::filesystem;
 class IO{
   public:
     fs::path imageSrcPath;
-    long long VAR_THRESHOLD = 0;
+    double VAR_THRESHOLD = 0;
     long long MIN_BLOCK_SIZE = 0;
     int method = -1;
     fs::path imageDestPath;

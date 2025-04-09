@@ -46,7 +46,6 @@ bool IO::inputThreshold() {
     cin.clear();
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
   }
-
   return true;
 }
 
@@ -70,6 +69,7 @@ bool IO::inputMethod(){
   cout << "2. Mean Absolute Deviation" << '\n';
   cout << "3. Maximum Difference" << '\n';
   cout << "4. Entropy" << '\n';
+  cout << "5. SSIM" << '\n';
   cout << "Choose method: ";
 
   while (!(cin >> method) || (method <= 0 && method >= 4)) {
