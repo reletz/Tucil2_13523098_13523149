@@ -4,6 +4,7 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
+#include <limits>
 #include "quadtree.hpp"
 
 using namespace std;
@@ -12,16 +13,23 @@ namespace fs = std::filesystem;
 class IO{
   public:
     fs::path imageSrcPath;
-    long long VAR_THRESHOLD = 0;
-    long long MIN_BLOCK_SIZE = 0;
+    float VAR_THRESHOLD = 0.0f;
+    int MIN_BLOCK_SIZE = 0;
     int method = -1;
     fs::path imageDestPath;
+    
+    // Bonus features
+    float TARGET_COMPRESSION = 0.0f;
+    bool GENERATE_GIF = false;
+    fs::path gifPath;
 
     bool inputSrc(char const *argv[]);
     bool inputThreshold();
     bool inputMinBlock();
     bool inputMethod();
     bool inputDest(char const *argv[]);
+    bool inputTargetCompression();
+    bool inputGifPath(char const *argv[]);
 
     bool validYN(string msg);
   
