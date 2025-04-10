@@ -5,7 +5,7 @@
 
 using namespace std;
 
-RGB ImageError::mean(const std::vector<std::vector<RGB>>& image, int x, int y, int width, int height){
+RGB ImageError::mean(const vector<vector<RGB>>& image, int x, int y, int width, int height){
   long long R = 0, G = 0, B = 0;
   int dim = width*height;
 
@@ -130,9 +130,26 @@ float ImageError::ssim_channel(const vector<vector<int>>& A,
   const vector<vector<int>>& B,
   int xA, int yA, int xB, int yB,
   int width, int height) {
+
+  /*  
+  Rumus C: C = (K.L)^2.
+  "
+  Throughout this paper, the SSIM measure uses the following parameter settings: K1 = 0.01; K2 = 0.03.
+  These values are somewhat arbitrary, but we find that in our current experiments, 
+  the performance of the SSIM index algorithm is fairly insensitive to variations of these values
+  "
+  (Di Jurnal Halaman 7)
+  */
+
+  cerr << "[DEBUG] Masuk SSIM channel: " << xA << "," << yA << " size " << width << "x" << height << endl;
+
+  if (width <= 1 || height <= 1) return 1.0f; 
+
   const float C1 = (0.01f * 255) * (0.01f * 255);
   const float C2 = (0.03f * 255) * (0.03f * 255);
   int N = width * height;
+
+  if (N <= 1) return 1.0f;
 
   float meanA = 0.0f, meanB = 0.0f;
   for (int j = 0; j < height; ++j) {
@@ -159,9 +176,16 @@ float ImageError::ssim_channel(const vector<vector<int>>& A,
   varB /= N - 1;
   covAB /= N - 1;
 
+  cerr << "[DEBUG] VarA: " << varA << ", VarB: " << varB << ", CovAB: " << covAB << endl;
+
+
   float numerator = (2 * meanA * meanB + C1) * (2 * covAB + C2);
   float denominator = (meanA * meanA + meanB * meanB + C1) * (varA + varB + C2);
+  cerr << "[DEBUG] Numerator: " << numerator << ", Denominator: " << denominator << endl;
 
+  if (denominator == 0) return 1.0f;
+
+  cerr << "[DEBUG] SSIM result: " << (numerator / denominator) << endl;
   return numerator / denominator;
 }
 
@@ -186,6 +210,7 @@ float ImageError::ssim(const vector<vector<RGB>>& imageA,
       channelAR[j][i] = imageA[j][i].r;
       channelAG[j][i] = imageA[j][i].g;
       channelAB[j][i] = imageA[j][i].b;
+      
       channelBR[j][i] = imageB[j][i].r;
       channelBG[j][i] = imageB[j][i].g;
       channelBB[j][i] = imageB[j][i].b;
