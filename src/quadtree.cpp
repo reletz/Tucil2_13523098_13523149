@@ -94,11 +94,11 @@ int QuadTree::getMaxDepth(QuadTreeNode* node) const {
       maxChildDepth = max(maxChildDepth, getMaxDepth(node->getChildNode(i)));
   }
 
-  return maxChildDepth;
+  return 1 + maxChildDepth;
 }
 
 int QuadTree::getMaxDepth() const {
-  return getMaxDepth(root);
+  return getMaxDepth(root) - 1;
 }
 
 int QuadTree::getNodeCount(QuadTreeNode* node) const {
