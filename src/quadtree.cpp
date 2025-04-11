@@ -39,7 +39,7 @@ QuadTreeNode* QuadTree::buildRecursive(const vector<vector<RGB>>& image, int x, 
   float error = calculateError(image, x, y, width, height, method);
   // cout << "[INFO] Error: " << error << " | Threshold: " << threshold << '\n';
 
-  cout << this->method << endl;
+  // cout << this->method << endl;
 
   if(this->method == 4 ){
     if (error > threshold || width <= minSize || height <= minSize) {
