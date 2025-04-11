@@ -58,7 +58,39 @@ bool IO::inputThreshold() {
     try {
       if (!input.empty()) {
         VAR_THRESHOLD = stod(input);
-        break;
+        if(method == 1){
+          if(VAR_THRESHOLD < 0 || VAR_THRESHOLD > 255 * 255){
+            cout << "For Variance Method, Boundary is Between 0 and 255 * 255\n";
+          } else {
+            break;
+          }
+        }else if(method == 2){
+          if(VAR_THRESHOLD < 0 || VAR_THRESHOLD > 255){
+            cout << "For Mean Absolute Deviation Method, Boundary is Between 0 and 255\n";
+          } else {
+            break;
+          }
+        }else if(method == 3){
+          if(VAR_THRESHOLD < 0 || VAR_THRESHOLD > 255){
+            cout << "For Maximum Difference Method, Boundary is Between 0 and 255\n";
+          } else {
+            break;
+          }
+        }else if(method == 4){
+          if(VAR_THRESHOLD < 0 || VAR_THRESHOLD >= 8){
+            cout << "For Entropy Method, Boundary is Between 0 and 7\n";
+          } else {
+            break;
+          }
+        }else if(method == 5){
+          if(VAR_THRESHOLD < 0 || VAR_THRESHOLD > 1){
+            cout << "For SSIM Method, Boundary is Between 0 and 1\n";
+          } else {
+            break;
+          }
+        }
+        // cout << "Invalid input! Please enter a valid number.\n";
+        // break;
       }
     } catch (...) {
       // Handle any exception from conversion
@@ -81,7 +113,13 @@ bool IO::inputMinBlock(){
     try {
       if (!input.empty()) {
         MIN_BLOCK_SIZE = stoi(input);
-        break;
+        if(MIN_BLOCK_SIZE < 1){
+          cout << "Minimum Block Size must be greater than 0\n";
+        }else{
+          break;
+        }
+        // cout << "Invalid input! Please enter a valid number.\n";
+        // break;
       }
     } catch (...) {
       // Handle any exception from conversion
