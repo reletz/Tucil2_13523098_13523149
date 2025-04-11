@@ -133,9 +133,9 @@ void QuadTree::renderFrameToImage(QuadTreeNode* node, vector<uint8_t>& frameData
               int idx = (flippedY * imageWidth + x) * 3;
               
               if (idx >= 0 && idx + 2 < frameData.size()) {
-                  frameData[idx] = mean.r;
+                  frameData[idx] = mean.b;
                   frameData[idx + 1] = mean.g;
-                  frameData[idx + 2] = mean.b;
+                  frameData[idx + 2] = mean.r;
               }
           }
       }
