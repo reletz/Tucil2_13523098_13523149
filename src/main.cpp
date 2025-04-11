@@ -27,3 +27,4 @@ int main(int argc, char const *argv[])
     cout << qt.getNodeCount() << '\n';
     return 0;
 }
+
