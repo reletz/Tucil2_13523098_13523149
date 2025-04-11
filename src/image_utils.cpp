@@ -58,38 +58,6 @@ void ImageUtils::matrixToImage(const vector<vector<RGB>>& image, const string& f
     }
 }
 
-vector<vector<RGB>> ImageUtils::resize(const vector<vector<RGB>>& image, int newWidth, int newHeight){
-    int rows = image.size();
-    int cols = image[0].size();
-    vector<vector<RGB>> newImage(newHeight, vector<RGB>(newWidth));
-
-    for(int i = 0; i < newHeight;i++){
-        for(int j = 0 ; j < newWidth;j++){
-            int y = i * rows / newHeight;  // Perbaikan indeks
-            int x = j * cols / newWidth;  
-            newImage[i][j] = image[y][x];
-        }
-    }
-
-    return newImage;
-}
-
-vector<vector<RGB>> ImageUtils::normalize(const vector<vector<RGB>>& image, RGB mean){
-    int rows = image.size();
-    int cols = image[0].size();
-    vector<vector<RGB>> newImage(rows, vector<RGB>(cols));
-
-    for(int i = 0; i < rows;i++){
-        for(int j = 0 ; j < cols;j++){
-            newImage[i][j].r = max(0, image[i][j].r - mean.r);
-            newImage[i][j].g = max(0, image[i][j].g - mean.g);
-            newImage[i][j].b = max(0, image[i][j].b - mean.b);
-        }
-    }
-
-    return newImage;
-}
-
 void ImageUtils::fillCompressedImage(QuadTreeNode* node, vector<vector<RGB>>& image){
     if (node->isLeafNode()) {
         int x = node->getX();
