@@ -41,20 +41,27 @@ QuadTreeNode* QuadTree::buildRecursive(const vector<vector<RGB>>& image, int x, 
 
   // cout << this->method << endl;
 
-  if(this->method == 4 ){
-    if (error > threshold || width <= minSize || height <= minSize) {
-      RGB mean = ImageError::mean(image, x, y, width, height);
-      node -> setMean(mean);
-      node -> setLeaf(true);
-      return node;
-    }
-  }else{
-    if (error < threshold || width <= minSize || height <= minSize) {
-      RGB mean = ImageError::mean(image, x, y, width, height);
-      node -> setMean(mean);
-      node -> setLeaf(true);
-      return node;
-    }
+  // if(this->method == 4 ){
+  //   if (error > threshold || width * height <= minSize) {
+  //     RGB mean = ImageError::mean(image, x, y, width, height);
+  //     node -> setMean(mean);
+  //     node -> setLeaf(true);
+  //     return node;
+  //   }
+  // }else{
+  //   if (error < threshold || width * height <= minSize) {
+  //     RGB mean = ImageError::mean(image, x, y, width, height);
+  //     node -> setMean(mean);
+  //     node -> setLeaf(true);
+  //     return node;
+  //   }
+  // }
+
+  if (error < threshold || width * height <= minSize) {
+    RGB mean = ImageError::mean(image, x, y, width, height);
+    node -> setMean(mean);
+    node -> setLeaf(true);
+    return node;
   }
 
   node -> setLeaf(false);
@@ -77,7 +84,7 @@ float QuadTree::calculateError(const std::vector<std::vector<RGB>>& image, int x
     case 1: return ImageError::mad(image, x, y, width, height);
     case 2: return ImageError::maxDiff(image, x, y, width, height);
     case 3: return ImageError::entropy(image, x, y, width, height);
-    case 4: return ImageError::ssim(image, x, y, width, height);
+    case 4: return 1 - ImageError::ssim(image, x, y, width, height);
     default: 
       // cerr << "[ERROR] Unknown error method: " << method << '\n';
       return 0.0f;

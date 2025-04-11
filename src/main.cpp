@@ -21,20 +21,27 @@ int main(int argc, char const *argv[])
     if (stream.GENERATE_GIF) {
         originalImage = imageToMatrix(stream.imageSrcPath.string());
     }
-
+    uintmax_t originalSize = filesystem::file_size(stream.imageSrcPath);
     QuadTree qt = compressImage(stream);
+    auto end = chrono::steady_clock::now();
+    auto diff = end - start;
 
     if (stream.GENERATE_GIF) {
         if (!qt.createCompressionGif(originalImage, stream.gifPath.string(), 200)) {
             cerr << "GIF creation failed" << endl;
         }
     }
-
-    auto end = chrono::steady_clock::now();
-    auto diff = end - start;
-
-    cout << chrono::duration<double, milli>(end - start).count() << " ms" << '\n';
+    uintmax_t compressedSize = 0;
+    if (stream.imageDestPath.empty() == false) {
+        compressedSize = filesystem::file_size(stream.imageDestPath);
+    }
+    double compressionPercentage = 100.0 - ((double)compressedSize / originalSize * 100.0);
+    cout << "Execution time: " << chrono::duration<double, milli>(diff).count() << " ms" << '\n';
+    cout << "Original image size: " << originalSize << " bytes" << '\n';
+    cout << "Compressed image size: " << compressedSize << " bytes" << '\n';
+    cout << "Compression percentage: " << compressionPercentage << "%" << '\n';
     cout << "Max tree depth: " << qt.getMaxDepth() << '\n';
     cout << "Total nodes: " << qt.getNodeCount() << '\n';
+    
     return 0;
 }

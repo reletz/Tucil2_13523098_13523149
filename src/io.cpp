@@ -1,26 +1,32 @@
 #include "header/io.hpp"
 
 bool IO::validYN(string msg){
-  char confirm;
+  string input;
   cout << msg << '\n';
-  cin >> confirm;
-  while (confirm != 'Y' && confirm != 'y' && confirm != 'N' && confirm != 'n') {
+  getline(cin, input);
+  
+  while (input.empty() || (input[0] != 'Y' && input[0] != 'y' && input[0] != 'N' && input[0] != 'n')) {
     cout << "Invalid input!" << '\n';
     cout << msg << '\n';
-    cin >> confirm;
+    getline(cin, input);
   }
-  if (confirm == 'Y' || confirm == 'y') return true;
-  else return false;
+  
+  return (input[0] == 'Y' || input[0] == 'y');
 }
 
 bool IO::inputSrc(char const *argv[]){
-  fs::path rootWorkspace = fs::canonical(fs::path(argv[0]).parent_path() / "..");
-  rootWorkspace += "/test/";
-    
-  cout << "Input Image Name in test folder (with extension): ";
-  string imageName;
-  cin >> imageName;
-  imageSrcPath = rootWorkspace / imageName;
+  string imagePath;
+  
+  cout << "Input absolute path to image file: ";
+  getline(cin, imagePath);
+  
+  while (imagePath.empty() || imagePath.find_first_not_of(" \t\n\r") == string::npos) {
+    cout << "Error: Empty path is not allowed.\n";
+    cout << "Input absolute path to image file: ";
+    getline(cin, imagePath);
+  }
+  
+  imageSrcPath = fs::path(imagePath);
 
   while (!fs::exists(imageSrcPath)) {
     cout << "File not found: " << imageSrcPath << '\n';
@@ -29,89 +35,182 @@ bool IO::inputSrc(char const *argv[]){
       return false;
     }
 
-    cout << "Input Image Name in test folder (with extension): ";
-    cin >> imageName;
-    imageSrcPath = rootWorkspace / imageName;
+    cout << "Input absolute path to image file: ";
+    getline(cin, imagePath);
+    
+    while (imagePath.empty() || imagePath.find_first_not_of(" \t\n\r") == string::npos) {
+      cout << "Error: Empty path is not allowed.\n";
+      cout << "Input absolute path to image file: ";
+      getline(cin, imagePath);
+    }
+    
+    imageSrcPath = fs::path(imagePath);
   }
   return true;
 }
 
 bool IO::inputThreshold() {
+  string input;
   cout << "Input Variance Threshold: ";
+  getline(cin, input);
   
-  while (!(cin >> VAR_THRESHOLD)) {
+  while (true) {
+    try {
+      if (!input.empty()) {
+        VAR_THRESHOLD = stod(input);
+        break;
+      }
+    } catch (...) {
+      // Handle any exception from conversion
+    }
+    
     cout << "Invalid input! Please enter a valid number.\n";
     cout << "Input Variance Threshold: ";
-    
-    cin.clear();
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, input);
   }
 
   return true;
 }
 
-
 bool IO::inputMinBlock(){
+  string input;
   cout << "Input Minimum Block Size: ";
+  getline(cin, input);
   
-  while (!(cin >> MIN_BLOCK_SIZE)) {
+  while (true) {
+    try {
+      if (!input.empty()) {
+        MIN_BLOCK_SIZE = stoi(input);
+        break;
+      }
+    } catch (...) {
+      // Handle any exception from conversion
+    }
+    
     cout << "Invalid input! Please enter a valid number.\n";
     cout << "Input Minimum Block Size: ";
-    
-    cin.clear();
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, input);
   }
 
   return true;
 }
 
 bool IO::inputMethod(){
+  string input;
+  
   cout << "1. Variance" << '\n';
   cout << "2. Mean Absolute Deviation" << '\n';
   cout << "3. Maximum Difference" << '\n';
   cout << "4. Entropy" << '\n';
   cout << "5. Structural Similarity Index (SSIM) [BONUS]" << '\n';
   cout << "Choose method: ";
-
-  while (!(cin >> method) || method < 1 || method > 5) {
+  getline(cin, input);
+  
+  while (true) {
+    try {
+      if (!input.empty()) {
+        method = stoi(input);
+        if (method >= 1 && method <= 5) {
+          break;
+        }
+      }
+    } catch (...) {
+      // Handle any exception from conversion
+    }
+    
     cout << "Invalid input! Please enter a valid number between 1 and 5.\n";
     cout << "Choose method: ";
-    
-    cin.clear();
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, input);
   }
 
-  if (method == 5) {
-    cout << "Note: For SSIM, a higher threshold means better quality (e.g., 0.8-0.95).\n";
-    cout << "      Unlike other methods where lower thresholds mean better quality.\n";
-  }
+  // if (method == 5) {
+  //   cout << "Note: For SSIM, a higher threshold means better quality (e.g., 0.8-0.95).\n";
+  //   cout << "      Unlike other methods where lower thresholds mean better quality.\n";
+  // }
 
   return true;
 }
 
 bool IO::inputDest(char const *argv[]) {
-  fs::path rootWorkspace = fs::canonical(fs::path(argv[0]).parent_path() / "..");
-  rootWorkspace += "/test/";
-  string extension = imageSrcPath.extension().string();
+  string outputPath;
+  
+  cout << "Enter absolute path for output image (including filename with extension): ";
+  getline(cin, outputPath);
+  
+  while (outputPath.empty() || outputPath.find_first_not_of(" \t\n\r") == string::npos) {
+    cout << "Error: Empty path is not allowed.\n";
+    cout << "Enter absolute path for output image (including filename with extension): ";
+    getline(cin, outputPath);
+  }
+  
+  imageDestPath = fs::path(outputPath);
 
-  string imageName;
-  cout << "Enter output image name (without extension, e.g., result): ";
-  cin >> imageName;
-
-  imageDestPath = rootWorkspace / (imageName + extension);
-
-  if (!fs::exists(rootWorkspace)) {
-    fs::create_directories(rootWorkspace);
+  fs::path parentPath = imageDestPath.parent_path();
+  while (!fs::exists(parentPath)) {
+    cout << "Directory does not exist: " << parentPath << '\n';
+    
+    if (validYN("Do you want to create this directory? (Y/n)")) {
+      try {
+        fs::create_directories(parentPath);
+        if (!fs::exists(parentPath)) {
+          cout << "Failed to create directory: " << parentPath << '\n';
+        } else {
+          break; 
+        }
+      } catch (const fs::filesystem_error& e) {
+        cout << "Error creating directory: " << e.what() << '\n';
+      }
+    }
+    
+    cout << "Enter absolute path for output image (including filename with extension): ";
+    getline(cin, outputPath);
+    
+    while (outputPath.empty() || outputPath.find_first_not_of(" \t\n\r") == string::npos) {
+      cout << "Error: Empty path is not allowed.\n";
+      cout << "Enter absolute path for output image (including filename with extension): ";
+      getline(cin, outputPath);
+    }
+    
+    imageDestPath = fs::path(outputPath);
+    parentPath = imageDestPath.parent_path();
   }
 
   ofstream testFile(imageDestPath);
   while (!testFile) {
     cout << "Error: Cannot create file at " << imageDestPath << '\n';
-    cout << "Enter output image name (without extension, e.g., result): ";
-    cin >> imageName;
-
-    imageDestPath = rootWorkspace / (imageName + extension);
-    return false;
+    
+    cout << "Enter absolute path for output image (including filename with extension): ";
+    getline(cin, outputPath);
+    
+    while (outputPath.empty() || outputPath.find_first_not_of(" \t\n\r") == string::npos) {
+      cout << "Error: Empty path is not allowed.\n";
+      cout << "Enter absolute path for output image (including filename with extension): ";
+      getline(cin, outputPath);
+    }
+    
+    imageDestPath = fs::path(outputPath);
+    
+    parentPath = imageDestPath.parent_path();
+    if (!fs::exists(parentPath)) {
+      cout << "Directory does not exist: " << parentPath << '\n';
+      
+      if (validYN("Do you want to create this directory? (Y/n)")) {
+        try {
+          fs::create_directories(parentPath);
+          if (!fs::exists(parentPath)) {
+            cout << "Failed to create directory: " << parentPath << '\n';
+            continue;
+          }
+        } catch (const fs::filesystem_error& e) {
+          cout << "Error creating directory: " << e.what() << '\n';
+          continue;
+        }
+      } else {
+        continue; 
+      }
+    }
+    
+    testFile.open(imageDestPath);
   }
   testFile.close();
 
@@ -126,23 +225,85 @@ bool IO::inputGifPath(char const *argv[]) {
   }
 
   GENERATE_GIF = true;
-  fs::path rootWorkspace = fs::canonical(fs::path(argv[0]).parent_path() / "..");
-  rootWorkspace += "/test/";
 
-  string gifName;
-  cout << "Enter output GIF name (without extension, e.g., compression_process): ";
-  cin >> gifName;
+  string gifPathStr;
+  cout << "Enter absolute path for output GIF (including filename with .gif extension): ";
+  getline(cin, gifPathStr);
+  
+  while (gifPathStr.empty() || gifPathStr.find_first_not_of(" \t\n\r") == string::npos) {
+    cout << "Error: Empty path is not allowed.\n";
+    cout << "Enter absolute path for output GIF (including filename with .gif extension): ";
+    getline(cin, gifPathStr);
+  }
+  
+  gifPath = fs::path(gifPathStr);
 
-  gifPath = rootWorkspace / (gifName + ".gif");
-
-  if (!fs::exists(rootWorkspace)) {
-    fs::create_directories(rootWorkspace);
+  fs::path parentPath = gifPath.parent_path();
+  while (!fs::exists(parentPath)) {
+    cout << "Directory does not exist: " << parentPath << '\n';
+    
+    if (validYN("Do you want to create this directory? (Y/n)")) {
+      try {
+        fs::create_directories(parentPath);
+        if (!fs::exists(parentPath)) {
+          cout << "Failed to create directory: " << parentPath << '\n';
+        } else {
+          break; 
+        }
+      } catch (const fs::filesystem_error& e) {
+        cout << "Error creating directory: " << e.what() << '\n';
+      }
+    }
+    
+    cout << "Enter absolute path for output GIF (including filename with .gif extension): ";
+    getline(cin, gifPathStr);
+    
+    while (gifPathStr.empty() || gifPathStr.find_first_not_of(" \t\n\r") == string::npos) {
+      cout << "Error: Empty path is not allowed.\n";
+      cout << "Enter absolute path for output GIF (including filename with .gif extension): ";
+      getline(cin, gifPathStr);
+    }
+    
+    gifPath = fs::path(gifPathStr);
+    parentPath = gifPath.parent_path();
   }
 
   ofstream testFile(gifPath);
-  if (!testFile) {
+  while (!testFile) {
     cout << "Error: Cannot create file at " << gifPath << '\n';
-    return false;
+    
+    cout << "Enter absolute path for output GIF (including filename with .gif extension): ";
+    getline(cin, gifPathStr);
+    
+    while (gifPathStr.empty() || gifPathStr.find_first_not_of(" \t\n\r") == string::npos) {
+      cout << "Error: Empty path is not allowed.\n";
+      cout << "Enter absolute path for output GIF (including filename with .gif extension): ";
+      getline(cin, gifPathStr);
+    }
+    
+    gifPath = fs::path(gifPathStr);
+    
+    parentPath = gifPath.parent_path();
+    if (!fs::exists(parentPath)) {
+      cout << "Directory does not exist: " << parentPath << '\n';
+      
+      if (validYN("Do you want to create this directory? (Y/n)")) {
+        try {
+          fs::create_directories(parentPath);
+          if (!fs::exists(parentPath)) {
+            cout << "Failed to create directory: " << parentPath << '\n';
+            continue;
+          }
+        } catch (const fs::filesystem_error& e) {
+          cout << "Error creating directory: " << e.what() << '\n';
+          continue;
+        }
+      } else {
+        continue; 
+      }
+    }
+    
+    testFile.open(gifPath);
   }
   testFile.close();
 
@@ -224,7 +385,6 @@ bool IO::createCompressionGif(const vector<vector<RGB>>& originalImage, const Qu
     return success;
 }
 
-// Make sure to update the initInput function to include GIF path input
 bool IO::initInput(int argc, char const *argv[]) {
     if (!inputSrc(argv))                return false;
     if (!inputMethod())                 return false;
