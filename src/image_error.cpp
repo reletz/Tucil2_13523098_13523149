@@ -1,25 +1,31 @@
 #include "header/image_error.hpp"
 
-RGB ImageError::mean(const std::vector<std::vector<RGB>>& image, int x, int y, int width, int height){
-  long long R = 0, G = 0, B = 0;
-  int dim = width*height;
-
-  for (int j = y; j < y + height; j++){
-    for (int i = x; i < x + width; i++){
-      R += image[j][i].r;
-      G += image[j][i].g;
-      B += image[j][i].b;
-    }
+RGB ImageError::mean(const vector<vector<RGB>>& image, int x, int y, int width, int height) {
+  if (width <= 0 || height <= 0) {
+      return {0, 0, 0};
   }
 
-  RGB mean;
-  mean.r = R / dim;
-  mean.g = G / dim;
-  mean.b = B / dim;
+  long sumR = 0, sumG = 0, sumB = 0;
+  int count = 0;
 
-  return mean;
+  for (int j = y; j < y + height && j < image.size(); j++) {
+      for (int i = x; i < x + width && i < image[j].size(); i++) {
+          sumR += image[j][i].r;
+          sumG += image[j][i].g;
+          sumB += image[j][i].b;
+          count++;
+      }
+  }
+
+  if (count == 0) return {0, 0, 0};
+
+  // Ensure we don't exceed RGB bounds (0-255)
+  return {
+      static_cast<uint8_t>(sumR / count),
+      static_cast<uint8_t>(sumG / count),
+      static_cast<uint8_t>(sumB / count)
+  };
 }
-
 float ImageError::variance(const vector<vector<RGB>>& image, int x, int y, int width, int height){
   long long R = 0, G = 0, B = 0;
   int dr = 0, dg = 0, db = 0;

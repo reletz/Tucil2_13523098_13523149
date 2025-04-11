@@ -150,13 +150,88 @@ bool IO::inputGifPath(char const *argv[]) {
   return true;
 }
 
-bool IO::initInput(int argc, char const *argv[]){
-  if (!inputSrc(argv))                return false;
-  if (!inputMethod())                 return false;
-  if (!inputThreshold())              return false;
-  if (!inputMinBlock())               return false;
-  if (!inputDest(argv))               return false;
-  // if (!inputGifPath(argv))            return false;
+void IO::renderQuadTreeAtDepth(QuadTreeNode* node, vector<uint8_t>& frameData, 
+                              int imageWidth, int imageHeight, int depth) {
+    if (node == nullptr) return;
+    
+    if (node->isLeafNode() || depth <= 0) {
+        RGB mean = node->getMean();
+        int x = node->getX();
+        int y = node->getY();
+        int width = node->getWidth();
+        int height = node->getHeight();
+        
+        for (int i = y; i < min(y + height, imageHeight); ++i) {
+            for (int j = x; j < min(x + width, imageWidth); ++j) {
+                int idx = (i * imageWidth + j) * 3;
+                frameData[idx] = mean.r;
+                frameData[idx + 1] = mean.g;
+                frameData[idx + 2] = mean.b;
+            }
+        }
+    } else {
+        for (int k = 0; k < 4; ++k) {
+            renderQuadTreeAtDepth(node->getChildNode(k), frameData, imageWidth, imageHeight, depth - 1);
+        }
+    }
+}
 
-  return true;
+bool IO::createCompressionGif(const vector<vector<RGB>>& originalImage, const QuadTree& quadtree, int delayMs) {
+    if (!GENERATE_GIF) {
+        return true; 
+    }
+    
+    if (originalImage.empty() || originalImage[0].empty()) {
+        cerr << "Error: Invalid image dimensions for GIF creation" << endl;
+        return false;
+    }
+    
+    int height = originalImage.size();
+    int width = originalImage[0].size();
+    
+    vector<vector<uint8_t>> frames;
+    
+    cout << "Creating GIF frames..." << endl;
+    
+    vector<uint8_t> originalFrame(width * height * 3);
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            int idx = (i * width + j) * 3;
+            originalFrame[idx] = originalImage[i][j].r;
+            originalFrame[idx + 1] = originalImage[i][j].g;
+            originalFrame[idx + 2] = originalImage[i][j].b;
+        }
+    }
+    frames.push_back(originalFrame);
+    
+    int maxDepth = quadtree.getMaxDepth();
+    
+    for (int depth = 1; depth <= maxDepth; depth++) {
+        vector<uint8_t> frameData(width * height * 3, 0);
+        renderQuadTreeAtDepth(quadtree.getRoot(), frameData, width, height, depth);
+        frames.push_back(frameData);
+    }
+    
+    cout << "Generating animated GIF with " << frames.size() << " frames..." << endl;
+    bool success = createAnimatedGif(frames, width, height, 200, gifPath.string());
+    
+    if (success) {
+        cout << "GIF successfully created at: " << gifPath << endl;
+    } else {
+        cerr << "Failed to create GIF" << endl;
+    }
+    
+    return success;
+}
+
+// Make sure to update the initInput function to include GIF path input
+bool IO::initInput(int argc, char const *argv[]) {
+    if (!inputSrc(argv))                return false;
+    if (!inputMethod())                 return false;
+    if (!inputThreshold())              return false;
+    if (!inputMinBlock())               return false;
+    if (!inputDest(argv))               return false;
+    if (!inputGifPath(argv))            return false;
+
+    return true;
 }

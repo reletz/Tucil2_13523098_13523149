@@ -116,3 +116,72 @@ int QuadTree::getNodeCount(QuadTreeNode* node) const {
 int QuadTree::getNodeCount() const {
   return getNodeCount(root);
 }
+
+void QuadTree::renderFrameToImage(QuadTreeNode* node, vector<uint8_t>& frameData, int imageWidth, int imageHeight, int currentDepth, int maxDepth) {
+  if (node == nullptr) return;
+  
+  if (node->isLeafNode() || currentDepth <= 0) {
+      RGB mean = node->getMean();
+      int startX = node->getX();
+      int startY = node->getY();
+      int width = node->getWidth();
+      int height = node->getHeight();
+      
+      for (int y = startY; y < startY + height && y < imageHeight; y++) {
+          for (int x = startX; x < startX + width && x < imageWidth; x++) {
+              int flippedY = imageHeight - 1 - y;
+              int idx = (flippedY * imageWidth + x) * 3;
+              
+              if (idx >= 0 && idx + 2 < frameData.size()) {
+                  frameData[idx] = mean.r;
+                  frameData[idx + 1] = mean.g;
+                  frameData[idx + 2] = mean.b;
+              }
+          }
+      }
+  } else if (currentDepth > 0) {
+      for (int i = 0; i < 4; i++) {
+          renderFrameToImage(node->getChildNode(i), frameData, imageWidth, imageHeight, currentDepth - 1, maxDepth);
+      }
+  }
+}
+
+
+void QuadTree::collectFramesRecursive(QuadTreeNode* node, vector<vector<uint8_t>>& frames, int imageWidth, int imageHeight, int& currentDepth) {
+  int maxDepth = getMaxDepth();
+  
+  for (int depth = 1; depth <= maxDepth; depth++) {
+      vector<uint8_t> frameData(imageWidth * imageHeight * 3, 0);
+      
+      renderFrameToImage(root, frameData, imageWidth, imageHeight, depth, maxDepth);
+      
+      frames.push_back(frameData);
+  }
+}
+
+bool QuadTree::createCompressionGif(const vector<vector<RGB>>& originalImage, const string& gifPath, int delayMs) {
+  if (root == nullptr) {
+      cerr << "[ERROR] Cannot create GIF: QuadTree not built yet" << endl;
+      return false;
+  }
+  
+  int height = originalImage.size();
+  if (height == 0) return false;
+  int width = originalImage[0].size();
+  if (width == 0) return false;
+  
+  vector<vector<uint8_t>> frames;
+  
+  int currentDepth = 0;
+  collectFramesRecursive(root, frames, width, height, currentDepth);
+  
+  bool success = createAnimatedGif(frames, width, height, delayMs, gifPath);
+  
+  if (success) {
+      cout << "[INFO] GIF saved successfully at: " << gifPath << endl;
+  } else {
+      cerr << "[ERROR] Failed to create GIF" << endl;
+  }
+  
+  return success;
+}
