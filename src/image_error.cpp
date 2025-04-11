@@ -163,12 +163,12 @@ float ImageError::calculateChannelSSIM(
   char channel, float C1, float C2
 ) {
   // Original block
-  float μx = 0.0f;
-  float σx2 = 0.0f;
+  float meanx = 0.0f;
+  float varx = 0.0f;
   
   // Compressed block
-  float μy = 0.0f;
-  float σy2 = 0.0f;
+  float meany = 0.0f;
+  float vary = 0.0f;
   
   int pixelCount = width * height;
   
@@ -188,13 +188,13 @@ float ImageError::calculateChannelSSIM(
         valY = compressed[j][i].b;
       }
       
-      μx += valX;
-      μy += valY;
+      meanx += valX;
+      meany += valY;
     }
   }
   
-  μx /= pixelCount;
-  μy /= pixelCount;
+  meanx /= pixelCount;
+  meany /= pixelCount;
   
   // Variances
   for (int j = 0; j < height; j++) {
@@ -212,23 +212,23 @@ float ImageError::calculateChannelSSIM(
         valY = compressed[j][i].b;
       }
       
-      float dx = valX - μx;
-      float dy = valY - μy;
+      float dx = valX - meanx;
+      float dy = valY - meany;
       
-      σx2 += dx * dx;
-      σy2 += dy * dy;
+      varx += dx * dx;
+      vary += dy * dy;
     }
   }
   
-  σx2 /= pixelCount;
-  σy2 /= pixelCount;
+  varx /= pixelCount;
+  vary /= pixelCount;
   
   // cout << "σx2: " << σx2 << " σy2: " << σy2 << endl;
   // cout << "μx: " << μx << " μy: " << μy << endl;
   
   // (2μxμy+C1)(C2) / ((μx²+μy²+C1)(σx²+C2))
-  float numerator = (2 * μx * μy + C1) * (C2);
-  float denominator = (μx * μx + μy * μy + C1) * (σx2 * σx2 + C2);
+  float numerator = (2 * meanx * meany + C1) * (C2);
+  float denominator = (meanx * meanx + meany * meany + C1) * (varx * varx + C2);
   
   if (denominator < 0.0001f) return 0.8f;  // Avoid division by very small numbers
   float rawResult = numerator / denominator;
