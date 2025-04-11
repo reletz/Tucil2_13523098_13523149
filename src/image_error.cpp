@@ -1,4 +1,5 @@
 #include "header/image_error.hpp"
+#include <map>
 
 RGB ImageError::mean(const vector<vector<RGB>>& image, int x, int y, int width, int height) {
   if (width <= 0 || height <= 0) {
@@ -92,8 +93,40 @@ float ImageError::maxDiff(const vector<vector<RGB>>& image, int x, int y, int wi
 }
 
 
-float ImageError::entropy(const vector<vector<RGB>>& image, int x, int y, int width, int height){
-  return 0.0;
+float ImageError::entropy(const vector<vector<RGB>>& image, int x, int y, int width, int height) {
+  // histogram R, G, B
+  map<int, int> histR, histG, histB;
+  int totalPixels = width * height;
+
+  // itung "tinggi" histogram
+  for (int j = y; j < y + height; j++) {
+    for (int i = x; i < x + width; i++) {
+      int r = image[j][i].r;
+      int g = image[j][i].g;
+      int b = image[j][i].b;
+
+      histR[r]++;
+      histG[g]++;
+      histB[b]++;
+    }
+  }
+
+  // Entropi histogram
+  auto calculateEntropy = [](const map<int, int>& hist, int totalPixels) -> float {
+    float entropy = 0.0f;
+    for (const auto& entry : hist) {
+      float probability = float(entry.second) / totalPixels;
+      if (probability > 0) {
+        entropy -= probability * log2(probability);
+      }
+    } return entropy;
+  };  
+
+  float entropyR = calculateEntropy(histR, totalPixels);
+  float entropyG = calculateEntropy(histG, totalPixels);
+  float entropyB = calculateEntropy(histB, totalPixels);
+
+  return (entropyR + entropyG + entropyB) / 3.0f;
 }
 
 float ImageError::ssim(const vector<vector<RGB>>& image, int x, int y, int width, int height) {
