@@ -123,10 +123,10 @@ bool IO::inputMethod(){
     getline(cin, input);
   }
 
-  if (method == 5) {
-    cout << "Note: For SSIM, a higher threshold means better quality (e.g., 0.8-0.95).\n";
-    cout << "      Unlike other methods where lower thresholds mean better quality.\n";
-  }
+  // if (method == 5) {
+  //   cout << "Note: For SSIM, a higher threshold means better quality (e.g., 0.8-0.95).\n";
+  //   cout << "      Unlike other methods where lower thresholds mean better quality.\n";
+  // }
 
   return true;
 }
