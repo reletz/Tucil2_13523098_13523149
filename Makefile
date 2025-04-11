@@ -11,6 +11,9 @@ BIN = ./bin
 WINDOWS = winver
 LINUX = linuxver
 
+install:
+	sudo apt-get install libfreeimage3 libfreeimageplus3 libfreeimage-dev mingw-w64
+
 windows:
 	mkdir -p $(BIN)	
 	$(MINGW)-$(CXX) $(CXXFLAGS) -o $(BIN)/$(WINDOWS).exe $(SRC) $(LWINDOWS) $(LDFLAGS)
@@ -25,4 +28,4 @@ clean:
 	rm -rf $(BIN)/*.exe
 	rm -rf $(BIN)/$(LINUX)
 
-all: build
+all: install build
