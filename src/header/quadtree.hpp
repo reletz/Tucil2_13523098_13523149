@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include "gif_maker.hpp"
 
 using namespace std;
 
@@ -65,6 +66,9 @@ class QuadTree{
 
     void buildTree(const vector<vector<RGB>>& image, int x, int y, int width, int height, int method, float threshold, int minSize);
     QuadTreeNode* buildRecursive(const vector<vector<RGB>>& image, int x, int y, int width, int height);
+    void renderFrameToImage(QuadTreeNode* node, vector<uint8_t>& frameData, int imageWidth, int imageHeight, int currentDepth, int maxDepth);
+    void collectFramesRecursive(QuadTreeNode* node, vector<vector<uint8_t>>& frames, int imageWidth, int imageHeight, int& currentDepth);
+    bool createCompressionGif(const vector<vector<RGB>>& originalImage, const string& gifPath, int delayMs = 100);
 };
 
 #endif

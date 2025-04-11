@@ -27,13 +27,15 @@ class IO{
     bool inputThreshold();
     bool inputMinBlock();
     bool inputMethod();
+    bool inputGifPath(char const *argv[]);
     bool inputDest(char const *argv[]);
     bool inputTargetCompression();
-    bool inputGifPath(char const *argv[]);
-
     bool validYN(string msg);
-  
     bool initInput(int argc, char const *argv[]);    
+    void renderQuadTreeAtDepth(QuadTreeNode* node, vector<uint8_t>& frameData, int imageWidth, int imageHeight, int maxDepth);
+    int calculateNodeDepth(QuadTreeNode* root, QuadTreeNode* targetNode);
+    bool createCompressionGif(const vector<vector<RGB>>& originalImage, const QuadTree& quadtree, int delayMs);
+
 };
 
 #endif
