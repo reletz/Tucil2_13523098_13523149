@@ -25,7 +25,6 @@ int main(int argc, char const *argv[])
         QuadTree qt = compressImage(stream);
         if (qt.getNodeCount() == 0) {
             cout << "Error: Try to Input Image Again." << endl;
-            continue;
         }
         auto end = chrono::steady_clock::now();
         auto diff = end - start;
@@ -47,7 +46,10 @@ int main(int argc, char const *argv[])
         cout << "Max tree depth: " << qt.getMaxDepth() << '\n';
         cout << "Total nodes: " << qt.getNodeCount() << '\n';
 
-        if (!stream.validYN("Do you want to continue compressing another image? (Y/n)")) return 0;
+        if (!stream.validYN("Do you want to continue compressing another image? (Y/n)")){
+            
+            return 0;
+        }
     }
     return 0;
 }
