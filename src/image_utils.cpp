@@ -5,13 +5,20 @@ using namespace std;
 vector<vector<RGB>> ImageUtils::imageToMatrix(const string& filename){
     fipImage img;
     img.load(filename.c_str());
-    if (!img.isValid()) {
-        cout << "Could not read the image: " << filename << endl;
-        exit(1);
-    }    
+    if(!img.isValid()) {
+        cout << "Failed to load image: " << filename << endl;
+        cout << "Try to use another image." << endl;
+        return vector<vector<RGB>>();  
+    }
 
     int x = img.getWidth();
     int y = img.getHeight();
+
+    if(x <= 0 || y <= 0) {
+        cout << "Invalid image dimensions: " << x << "x" << y << endl;
+        return vector<vector<RGB>>();  
+    }
+    
     vector<vector<RGB>> image(y, vector<RGB>(x));
 
     for (int i = 0; i < y; i++){
@@ -80,6 +87,10 @@ void ImageUtils::fillCompressedImage(QuadTreeNode* node, vector<vector<RGB>>& im
 
 QuadTree ImageUtils::compressImage(IO streams){
     vector<vector<RGB>> image = imageToMatrix(streams.imageSrcPath.string());
+    if (image.empty() || image[0].empty()) {
+        cout << "Error: Image is not valid!" << endl;
+        return QuadTree();
+    }
     QuadTree qt;
     qt.buildTree(image, 0, 0, image[0].size(), image.size(), streams.method-1, streams.VAR_THRESHOLD, streams.MIN_BLOCK_SIZE);
     vector<vector<RGB>> compressedImage(image.size(), vector<RGB>(image[0].size()));

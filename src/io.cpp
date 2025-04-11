@@ -20,6 +20,7 @@ bool IO::inputSrc(char const *argv[]){
   cout << "Input absolute path to image file: ";
   getline(cin, imagePath);
   
+  
   while (imagePath.empty() || imagePath.find_first_not_of(" \t\n\r") == string::npos) {
     cout << "Error: Empty path is not allowed.\n";
     cout << "Input absolute path to image file: ";
@@ -27,6 +28,7 @@ bool IO::inputSrc(char const *argv[]){
   }
   
   imageSrcPath = fs::path(imagePath);
+  imageExtension = imageSrcPath.extension().string();
 
   while (!fs::exists(imageSrcPath)) {
     cout << "File not found: " << imageSrcPath << '\n';
@@ -177,6 +179,34 @@ bool IO::inputDest(char const *argv[]) {
   }
   
   imageDestPath = fs::path(outputPath);
+  while(imageExtension != imageDestPath.extension().string()){
+    cout << "Error: Output file extension does not match input file extension.\n";
+    cout << "Enter absolute path for output image (including filename with extension): ";
+    getline(cin, outputPath);
+    
+    while (outputPath.empty() || outputPath.find_first_not_of(" \t\n\r") == string::npos) {
+      cout << "Error: Empty path is not allowed.\n";
+      cout << "Enter absolute path for output image (including filename with extension): ";
+      getline(cin, outputPath);
+    }
+    
+    imageDestPath = fs::path(outputPath);
+  }
+
+  while(imageSrcPath == imageDestPath){
+    cout << "Error: Output file path cannot be the same as input file path.\n";
+    cout << "Enter absolute path for output image (including filename with extension): ";
+    getline(cin, outputPath);
+    
+    while (outputPath.empty() || outputPath.find_first_not_of(" \t\n\r") == string::npos) {
+      cout << "Error: Empty path is not allowed.\n";
+      cout << "Enter absolute path for output image (including filename with extension): ";
+      getline(cin, outputPath);
+    }
+    
+    imageDestPath = fs::path(outputPath);
+  }
+
 
   fs::path parentPath = imageDestPath.parent_path();
   while (!fs::exists(parentPath)) {

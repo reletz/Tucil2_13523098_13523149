@@ -16,6 +16,7 @@ class IO{
     float VAR_THRESHOLD = 0.0f;
     int MIN_BLOCK_SIZE = 0;
     int method = -1;
+    string imageExtension;
     fs::path imageDestPath;
     
     // Bonus features

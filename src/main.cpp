@@ -23,6 +23,10 @@ int main(int argc, char const *argv[])
         }
         uintmax_t originalSize = filesystem::file_size(stream.imageSrcPath);
         QuadTree qt = compressImage(stream);
+        if (qt.getNodeCount() == 0) {
+            cout << "Error: Try to Input Image Again." << endl;
+            continue;
+        }
         auto end = chrono::steady_clock::now();
         auto diff = end - start;
 
